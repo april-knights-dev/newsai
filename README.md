@@ -1,1 +1,1 @@
-# ai-slack-summary
+# ai-news
