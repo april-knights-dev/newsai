@@ -73,21 +73,19 @@ class WeeklyNewsGenerator:
             # 絵文字削除（簡易版）
             text = re.sub(r':[a-z_]+:', '', text)
             
-            # 日時を人間が読みやすい形式に
-            timestamp = datetime.fromtimestamp(float(msg.get('ts', 0)))
-            formatted_date = timestamp.strftime('%Y-%m-%d %H:%M')
+            # 改行削除
+            text = re.sub(r'\n', '', text)
             
             channels[channel].append({
-                'date': formatted_date,
                 'text': text[:500]  # 長すぎるメッセージは切り詰め
             })
         
         # チャンネルごとに整形
         for channel, msgs in channels.items():
             if msgs:
-                formatted_messages.append(f"\n【#{channel}】")
+                formatted_messages.append(f"\n#チャンネル：【#{channel}】")
                 for msg in msgs[-100:]:  # 各チャンネル最新100件まで
-                    formatted_messages.append(f"{msg['date']}: {msg['text']}")
+                    formatted_messages.append(f"- {msg['text']}")
         
         return "\n".join(formatted_messages)
     
@@ -102,20 +100,35 @@ class WeeklyNewsGenerator:
 - 上位10件の「今週の注目ニュース」を選んでください。
 - 外部のニュースは取り上げないでください。
 - もし重要なニュースが見つからない場合は、「今週は特に重要なニュースはありませんでした」と返してください。
-- ニュースタイトルは**で囲んでください。
-- 最後の10件目はユーモアのあるニュースを選んでください。
+- ネガティブなニュースは取り上げないでください。
+- 番外編として、ユーモアのあるニュースを5件選んでください。
+- 出力結果には【注目ニュース】と【番外編】の2つのセクションを作成してください。
+- 出力結果には枕詞や最後のコメントは含めないでください。
 
 #出力形式
-1. ニュースタイトル（タイトルの先頭に絵文字付き）
-   - 詳細説明（1-2文）。200字以内程度。
-   - 関連チャンネル: #channel-name
+- ニュースタイトル。タイトルの先頭にニュースの番号を付けてください。ニュースの最後にはタイトルに対応する絵文字を付けてください。ニュースタイトルは*で囲んでください。
+- 詳細説明（1-2文）。200字以内程度。
+- 関連チャンネル: #channel_name。ニュースが取り上げられているチャンネルを指定してください。
+
+例：
+【注目ニュース】
+1. *ニュースタイトル* 絵文字
+    ・詳細説明
+    ・関連チャンネル: #channel_name
+...
+
+【番外編】
+1. *ニュースタイトル* 絵文字
+    ・詳細説明
+    ・関連チャンネル: #channel_name
+...
 
 #Slackメッセージ
 Slackメッセージはある会社内でやり取りされた1週間分のメッセージです。
 """
             
             response = self.openai_client.chat.completions.create(
-                model="gpt-5-mini",
+                model="gpt-5",
                 messages=[
                     {"role": "system", "content": "あなたは社内コミュニケーションの専門家です。Slackメッセージから重要な情報を抽出し、わかりやすくまとめることが得意です。"},
                     {"role": "user", "content": prompt + messages_text}
