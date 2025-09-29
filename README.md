@@ -1,100 +1,100 @@
-## ai-news
+## newsai
 
-社内の Slack メッセージから「今週の注目ニュース」を自動生成し、Slack に投稿するツールです。
-定期実行はGitHub Actionsを利用しています。このリポジトリをフォークし、以下の Repository secrets を適切に設定することで利用可能です。
+newsai (News×AI) is a tool that automatically generates "This Week's Highlights" from your organization's Slack messages and posts it to Slack.
+Scheduled runs use GitHub Actions. Fork this repository and configure the following Repository secrets to use it.
 
 - OPENAI_API_KEY
 - SLACK_BOT_TOKEN
 - SLACK_CHANNEL
 
-詳細はブログに記載しております。
+See the blog for more details.
 
-### 主な構成
-- **collect_slack_messages.py**: Slack から直近のメッセージを収集して JSON に保存
-- **generate_weekly_news.py**: 収集したメッセージを分析し、週次ニュース文面を生成
-- **post_slack.py**: 生成した文面を Slack に投稿
-- **main.py**: 収集→生成→投稿までを一括実行
+### Main components
+- **collect_slack_messages.py**: Collect recent messages from Slack and save them as JSON
+- **generate_weekly_news.py**: Analyze the collected messages and generate the weekly news copy
+- **post_slack.py**: Post the generated copy to Slack
+- **main.py**: Run collect → generate → post end to end
 
-## 要件
-- **Python**: 3.13 以上
-- **uv**: Python のパッケージ/環境管理に使用
-- **Slack ボットトークン**: `SLACK_BOT_TOKEN`
-- **OpenAI API キー**: `OPENAI_API_KEY`
+## Requirements
+- **Python**: 3.13 or later
+- **uv**: Used for Python package and environment management
+- **Slack bot token**: `SLACK_BOT_TOKEN`
+- **OpenAI API key**: `OPENAI_API_KEY`
 
-### Slack 権限
-- **読み取り系**: `channels:read`, `groups:read`, `channels:history`, `groups:history`
-- **投稿系**: `chat:write`
-- **参加系**: `conversations.join`（パブリックチャンネルに自動参加する場合）
+### Slack permissions
+- `channels:read`, `channels:history`
+- `chat:write`
+- `channels.join` (if you want to auto-join public channels)
 
-## セットアップ
+## Setup
 
-### uv のインストール（macOS）
+### Install uv (macOS)
 ```bash
 brew install uv
 ```
-または
+or
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 依存関係のセットアップ
+### Set up dependencies
 ```bash
 uv python install 3.13
 uv sync
 ```
 
-### 環境変数の設定（.env 推奨）
-プロジェクト直下に `.env` を作成:
+### Environment variables (.env recommended)
+Create `.env` at the project root:
 ```bash
 cp .env.example .env
 ```
-各環境変数を適切に設定してください。
+Set each environment variable appropriately.
 
-## 各スクリプトの説明と実行方法
+## Scripts and how to run
 
-### collect_slack_messages.py（Slack メッセージ収集）
-- **概要**: ワークスペース内のパブリックチャンネルから、指定期間のメッセージを収集し、`slack_messages_YYYYMMDD_HHMMSS.json` として保存
-- **主な引数**
-  - `--days`: 収集する日数（既定: 7）
-  - `--output`: 出力ファイル名（未指定なら自動命名）
-  - `--token`: Slack ボットトークン（未指定なら `SLACK_BOT_TOKEN` を使用）
-  - `--no-auto-join`: パブリックチャンネルへの自動参加を無効化
-  - `--channel`: 名前に指定文字列を含むチャンネルのみ対象
-- **実行例**
+### collect_slack_messages.py (Collect Slack messages)
+- **Overview**: Collect messages from public channels in the workspace for a specified period and save as `slack_messages_YYYYMMDD_HHMMSS.json`
+- **Key arguments**
+  - `--days`: Number of days to collect (default: 7)
+  - `--output`: Output file name (auto-named if omitted)
+  - `--token`: Slack bot token (uses `SLACK_BOT_TOKEN` if omitted)
+  - `--no-auto-join`: Disable auto-joining public channels
+  - `--channel`: Target only channels whose names contain the specified string
+- **Examples**
 ```bash
 uv run python collect_slack_messages.py --days 7
 uv run python collect_slack_messages.py --days 30 --channel general
 uv run python collect_slack_messages.py --output messages.json
 ```
 
-### generate_weekly_news.py（週次ニュース生成）
-- **概要**: 保存済み JSON を読み込み、OpenAI API で「注目ニュース」「番外編」を含む週次ニュース文面を生成
-- **主な引数**
-  - `--messages-file`: 収集済み JSON パス（未指定時は `slack_messages_*.json` の最新を自動検出）
-  - `--days`: 分析対象の日数（既定: 7）
-  - `--openai-key`: OpenAI API キー（未指定なら `OPENAI_API_KEY` を使用）
-- **実行例**
+### generate_weekly_news.py (Generate weekly news)
+- **Overview**: Read the saved JSON and, using the OpenAI API, generate weekly news copy including "Highlights" and "Extras"
+- **Key arguments**
+  - `--messages-file`: Path to the collected JSON (if omitted, automatically detect the latest `slack_messages_*.json`)
+  - `--days`: Number of days to analyze (default: 7)
+  - `--openai-key`: OpenAI API key (uses `OPENAI_API_KEY` if omitted)
+- **Examples**
 ```bash
 uv run python generate_weekly_news.py
 uv run python generate_weekly_news.py --days 7 --messages-file slack_messages_20250929_145307.json
 ```
-出力は標準出力にテキストとして表示されます。
+The output is printed as text to stdout.
 
-### post_slack.py（Slack 投稿専用）
-- **概要**: 任意のテキストを Slack に投稿。本文は `--text` または標準入力から渡すことが可能
-- **主な引数**
-  - `--channel`: 投稿先チャンネル名または ID（未指定時は `SLACK_CHANNEL`）
-  - `--token`: Slack ボットトークン（未指定時は `SLACK_BOT_TOKEN`）
-  - `--text`: 投稿本文（未指定時は標準入力を使用）
-- **実行例**
+### post_slack.py (Post to Slack)
+- **Overview**: Post arbitrary text to Slack. You can pass the body via `--text` or via standard input
+- **Key arguments**
+  - `--channel`: Destination channel name or ID (defaults to `SLACK_CHANNEL`)
+  - `--token`: Slack bot token (defaults to `SLACK_BOT_TOKEN`)
+  - `--text`: Message body (if omitted, read from standard input)
+- **Example**
 ```bash
-uv run python post_slack.py --channel general --text "本文"
+uv run python post_slack.py --channel general --text "Body"
 ```
 
-### main.py（一括実行）
-- **概要**: 収集→要約生成→Slack 投稿までを一括で実行
-- **必要な環境変数**: `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `SLACK_CHANNEL`
-- **実行例**
+### main.py (Run end to end)
+- **Overview**: Run collection → summary generation → Slack post end to end
+- **Required environment variables**: `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `SLACK_CHANNEL`
+- **Example**
 ```bash
 uv run python main.py
 ```
