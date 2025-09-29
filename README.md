@@ -9,6 +9,8 @@ Scheduled runs use GitHub Actions. Fork this repository and configure the follow
 
 See the blog for more details.
 
+https://zenn.dev/peoplex_blog/articles/2509-how-to-create-ai-news
+
 ### Main components
 - **collect_slack_messages.py**: Collect recent messages from Slack and save them as JSON
 - **generate_weekly_news.py**: Analyze the collected messages and generate the weekly news copy
