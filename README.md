@@ -11,6 +11,8 @@ See the blog for more details.
 
 https://zenn.dev/peoplex_blog/articles/2509-how-to-create-ai-news
 
+![newsai](https://github.com/user-attachments/assets/62359488-bf6e-48a1-a3d2-9140736fdc5f)
+
 ### Main components
 - **collect_slack_messages.py**: Collect recent messages from Slack and save them as JSON
 - **generate_weekly_news.py**: Analyze the collected messages and generate the weekly news copy
