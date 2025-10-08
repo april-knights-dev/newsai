@@ -6,6 +6,7 @@ Scheduled runs use GitHub Actions. Fork this repository and configure the follow
 - OPENAI_API_KEY
 - SLACK_BOT_TOKEN
 - SLACK_CHANNEL
+- SLACK_EXCLUDE_CHANNELS
 
 See the blog for more details.
 

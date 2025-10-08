@@ -14,6 +14,11 @@ class SlackMessageCollector:
     def __init__(self, token: str):
         self.client = WebClient(token=token)
         self.messages = []
+        self.excluded_channels = self.get_excluded_channels()
+
+    def get_excluded_channels(self) -> List[str]:
+        exclude_raw = os.environ.get("SLACK_EXCLUDE_CHANNELS", "")
+        return exclude_raw.split(",") if exclude_raw else []
         
     def get_bot_info(self) -> Dict:
         """ボットの情報を取得"""
@@ -30,6 +35,10 @@ class SlackMessageCollector:
     
     def join_channel(self, channel_id: str, channel_name: str) -> bool:
         """チャンネルに参加"""
+        if channel_name.lower() in self.excluded_channels:
+            print(f"  ⏭️ #{channel_name} は除外設定のためスキップ")
+            return False
+
         try:
             self.client.conversations_join(channel=channel_id)
             print(f"  ✅ #{channel_name} に参加しました")
@@ -50,7 +59,10 @@ class SlackMessageCollector:
     def get_channel_messages(self, channel_id: str, channel_name: str, oldest_timestamp: str) -> List[Dict]:
         """特定チャンネルのメッセージを取得"""
         all_messages = []
-        
+        if channel_name in self.excluded_channels:
+            print(f"  ⏭️ #{channel_name} は除外設定のためスキップ")
+            return []
+
         try:
             print(f"  📥 #{channel_name} のメッセージを取得中...")
             
