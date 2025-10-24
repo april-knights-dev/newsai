@@ -5,6 +5,17 @@ on:
     # 毎週金曜日18時（JST）に実行
     - cron: '0 9 * * 5'
   workflow_dispatch:  # 手動実行も可能
+    inputs:
+      days:
+        description: '収集する日数'
+        required: false
+        default: '7'
+        type: choice
+        options:
+          - '1'
+          - '7'
+          - '14'
+          - '30'
 
 jobs:
   collect:
@@ -28,7 +39,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         SLACK_EXCLUDE_CHANNELS: ${{ secrets.SLACK_EXCLUDE_CHANNELS }}
       run: |
-        python collect_slack_messages.py --days 7
+        python collect_slack_messages.py --days ${{ github.event.inputs.days || '7' }}
     
     - name: Upload collected messages
       uses: actions/upload-artifact@v3

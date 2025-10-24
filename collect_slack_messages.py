@@ -38,10 +38,6 @@ class SlackMessageCollector:
         if channel_name.lower() in self.excluded_channels:
             print(f"  ⏭️ #{channel_name} は除外設定のためスキップ")
             return False
-        
-        if channel_name.startswith('share_'):
-            print(f"  ⏭️ #{channel_name} は share_ で始まるためスキップ")
-            return False
 
         try:
             self.client.conversations_join(channel=channel_id)
@@ -65,10 +61,6 @@ class SlackMessageCollector:
         all_messages = []
         if channel_name in self.excluded_channels:
             print(f"  ⏭️ #{channel_name} は除外設定のためスキップ")
-            return []
-        
-        if channel_name.startswith('share_'):
-            print(f"  ⏭️ #{channel_name} は share_ で始まるためスキップ")
             return []
 
         try:
@@ -203,10 +195,6 @@ class SlackMessageCollector:
             
             # フィルタリング
             if channel_filter and channel_filter not in channel_name:
-                continue
-            
-            # share_ で始まるチャンネルをスキップ
-            if channel_name.startswith('share_'):
                 continue
             
             print(f"{'🔒' if is_private else '📢'} #{channel_name}")
