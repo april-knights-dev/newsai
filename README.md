@@ -1,12 +1,17 @@
 ## newsai
 
 newsai (News×AI) is a tool that automatically generates "This Week's Highlights" from your organization's Slack messages and posts it to Slack.
+It also supports generating daily external news drafts suitable for social media (Twitter/X) posting.
 Scheduled runs use GitHub Actions. Fork this repository and configure the following Repository secrets to use it.
 
+### Repository Secrets (for internal weekly news)
 - OPENAI_API_KEY
 - SLACK_BOT_TOKEN
 - SLACK_CHANNEL
 - SLACK_EXCLUDE_CHANNELS
+
+### Additional Secrets (for external daily news)
+- EXTERNAL_NEWS_CHANNEL - Channel for posting external news drafts
 
 See the blog for more details.
 
@@ -15,10 +20,16 @@ https://zenn.dev/peoplex_blog/articles/2509-how-to-create-ai-news
 ![newsai](https://github.com/user-attachments/assets/62359488-bf6e-48a1-a3d2-9140736fdc5f)
 
 ### Main components
+
+#### Internal Weekly News
 - **collect_slack_messages.py**: Collect recent messages from Slack and save them as JSON
 - **generate_weekly_news.py**: Analyze the collected messages and generate the weekly news copy
 - **post_slack.py**: Post the generated copy to Slack
 - **main.py**: Run collect → generate → post end to end
+
+#### External Daily News (for SNS)
+- **generate_external_news.py**: Generate external news suitable for social media posting
+- **main_external_news.py**: Run collect → generate external news → post draft end to end
 
 ## Requirements
 - **Python**: 3.13 or later
@@ -96,10 +107,44 @@ The output is printed as text to stdout.
 uv run python post_slack.py --channel general --text "Body"
 ```
 
-### main.py (Run end to end)
+### main.py (Run end to end - Internal weekly news)
 - **Overview**: Run collection → summary generation → Slack post end to end
 - **Required environment variables**: `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `SLACK_CHANNEL`
 - **Example**
 ```bash
 uv run python main.py
 ```
+
+### generate_external_news.py (Generate external news for SNS)
+- **Overview**: Read collected messages and generate a single topic suitable for external social media posting (Twitter/X format)
+- **Key arguments**
+  - `--messages-file`: Path to the collected JSON (if omitted, automatically detect the latest `slack_messages_*.json`)
+  - `--days`: Number of days to analyze (default: 1)
+  - `--openai-key`: OpenAI API key (uses `OPENAI_API_KEY` if omitted)
+- **Examples**
+```bash
+uv run python generate_external_news.py
+uv run python generate_external_news.py --days 1 --messages-file slack_messages_20250929_145307.json
+```
+The output is printed as text to stdout.
+
+### main_external_news.py (Run end to end - External daily news)
+- **Overview**: Run collection → external news generation → Slack draft post end to end
+- **Purpose**: Generate daily SNS-ready content drafts for external sharing
+- **Required environment variables**: `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `EXTERNAL_NEWS_CHANNEL`
+- **Example**
+```bash
+uv run python main_external_news.py
+```
+
+## Workflows
+
+### Weekly Internal News
+- **Workflow**: `.github/workflows/weekly-news.yml`
+- **Schedule**: Every Friday at 18:00 JST (09:00 UTC)
+- **Purpose**: Generate and post internal weekly highlights
+
+### Daily External News
+- **Workflow**: `.github/workflows/daily-external-news.yml`
+- **Schedule**: Every day at 18:00 JST (09:00 UTC)
+- **Purpose**: Generate SNS-ready news drafts for external sharing
