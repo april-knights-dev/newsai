@@ -1,0 +1,38 @@
+name: Daily External News
+
+on:
+  schedule:
+    - cron: "0 9 * * *"  # Every day 09:00 UTC (18:00 JST)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-external-news
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      EXTERNAL_NEWS_CHANNEL: ${{ secrets.EXTERNAL_NEWS_CHANNEL }}
+      SLACK_EXCLUDE_CHANNELS: ${{ secrets.SLACK_EXCLUDE_CHANNELS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Setup Python 3.13 via uv
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run external news generation
+        run: uv run python main_external_news.py
