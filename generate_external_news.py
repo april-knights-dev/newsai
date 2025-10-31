@@ -107,13 +107,13 @@ class ExternalNewsGenerator:
 - 機密情報や社内限定の情報を含まないもの
 
 生成内容：
-1. Twitter/X投稿用の文章（280文字以内を目安）
+1. **日本語で**Twitter/X投稿用の文章を作成（280文字以内を目安）
 2. ハッシュタグを2-3個含める
 3. 絵文字を適度に使用して親しみやすさを演出
 4. 企業アカウントとして適切なトーンで記述
 
 出力形式：
-投稿文のみを出力してください（説明や枕詞は不要）。
+投稿文のみを日本語で出力してください（説明や枕詞は不要）。
 
 #Slackメッセージ
 """
@@ -121,7 +121,7 @@ class ExternalNewsGenerator:
             response = self.openai_client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "あなたは企業のSNS担当者です。社内のSlackメッセージから、社外に共有するのに適切な話題を見つけ、Twitter/X投稿用の魅力的な文章を作成することが得意です。"},
+                    {"role": "system", "content": "あなたは企業のSNS担当者です。社内のSlackメッセージから、社外に共有するのに適切な話題を見つけ、Twitter/X投稿用の魅力的な日本語文章を作成することが得意です。必ず日本語で投稿文を生成してください。"},
                     {"role": "user", "content": prompt + messages_text}
                 ],
                 max_completion_tokens=500
