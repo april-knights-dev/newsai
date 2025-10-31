@@ -97,7 +97,7 @@ class ExternalNewsGenerator:
         
         try:
             prompt = """#指示
-以下のSlackメッセージから、「社外向けSNS（Twitter/X）で共有するのに適切な話題」を1つ選んでください。
+以下のSlackメッセージから、「社外向けSNS（Twitter/X）で共有するのに適切な話題」を最大5件選んでください。
 
 選定基準：
 - 企業の前向きな活動や成果を示すもの
@@ -107,13 +107,23 @@ class ExternalNewsGenerator:
 - 機密情報や社内限定の情報を含まないもの
 
 生成内容：
+各話題について以下を作成してください：
 1. **日本語で**Twitter/X投稿用の文章を作成（280文字以内を目安）
 2. ハッシュタグを2-3個含める
 3. 絵文字を適度に使用して親しみやすさを演出
 4. 企業アカウントとして適切なトーンで記述
 
 出力形式：
-投稿文のみを日本語で出力してください（説明や枕詞は不要）。
+複数の投稿案を番号付きで日本語で出力してください。各投稿案は空行で区切ってください。
+
+例：
+1. [投稿文1]
+
+2. [投稿文2]
+
+3. [投稿文3]
+
+※適切な話題が5件未満の場合は、見つかった分だけを出力してください。
 
 #Slackメッセージ
 """
@@ -124,7 +134,7 @@ class ExternalNewsGenerator:
                     {"role": "system", "content": "あなたは企業のSNS担当者です。社内のSlackメッセージから、社外に共有するのに適切な話題を見つけ、Twitter/X投稿用の魅力的な日本語文章を作成することが得意です。必ず日本語で投稿文を生成してください。"},
                     {"role": "user", "content": prompt + messages_text}
                 ],
-                max_completion_tokens=500
+                max_completion_tokens=2000
             )
             
             external_news = response.choices[0].message.content
