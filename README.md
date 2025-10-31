@@ -116,7 +116,7 @@ uv run python main.py
 ```
 
 ### generate_external_news.py (Generate external news for SNS)
-- **Overview**: Read collected messages and generate a single topic suitable for external social media posting (Twitter/X format)
+- **Overview**: Read collected messages and generate up to 5 topics suitable for external social media posting (Twitter/X format)
 - **Key arguments**
   - `--messages-file`: Path to the collected JSON (if omitted, automatically detect the latest `slack_messages_*.json`)
   - `--days`: Number of days to analyze (default: 1)
